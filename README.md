@@ -1,155 +1,273 @@
-# LLM API-KEY 检测工具
+# LLM API Key Checker
+
+![Vue.js](https://img.shields.io/badge/Vue.js-3.4.21-4FC08D?style=flat-square&logo=vue.js&logoColor=white)
+![Cloudflare Workers](https://img.shields.io/badge/Cloudflare%20Workers-F38020?style=flat-square&logo=cloudflare&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/ssfun/llm-api-key-checker)
 
-LLM API KEY 检测工具 是一个基于 Cloudflare Workers 的 Web 工具，用于批量检测各种 AI API 提供商（如 OpenAI、Anthropic、Google Gemini 等）的 API Key 是否有效。它支持余额查询、模型列表获取，并提供现代化的 UI 界面，帮助用户快速验证和分类 Key。
+一个功能强大的 LLM API 密钥批量检测工具，支持多个主流 LLM 提供商的密钥验证和余额查询。
 
-此工具适合 AI 开发者、批量管理 API 资源的用户。
+## ✨ 主要特性
 
-## 最近更新
-- 2025.08.16 version 1.0.2 修复 429 判断错误、修复 openrouter 渠道 gpt-5 模型检验错误
-- 2025.08.13 version 1.0.1 新增 DeepSeek 渠道余额币种显示，**请注意，阈值判断仍然使用数值进行阈值比较，没有考虑币种转换**
+- 🔑 **批量检测** - 支持同时检测多个 API 密钥，最多支持 50,000 个
+- 🏢 **多平台支持** - 兼容 OpenAI、Anthropic、Google Gemini、DeepSeek、Moonshot、通义千问、智谱 AI 等主流平台
+- 💰 **余额查询** - 精确查询每个有效密钥的余额信息
+- 🌍 **区域选择** - 支持不同地区的服务器节点选择
+- 📊 **实时进度与反馈** - 基于 WebSocket 的实时数据流，提供精确进度和即时状态更新
+- 🎯 **智能分类** - 自动将密钥分类为有效、低额、零额、无效等状态
+- 🚀 **高性能与任务控制** - 后端集中管理并发任务，支持暂停、继续、停止操作
+- 💡 **智能模型获取** - 自动遍历多个 Key 尝试获取模型列表，直至成功或全部失败
+- 🔍 **精细错误展示** - 优化错误信息优先级，优先展示 `reason`、`code` 等更具体信息
+- 📁 **文件导入** - 支持拖拽或选择 .txt 文件导入，带进度显示
+- 💻 **响应式设计** - 完美适配桌面端和移动端
 
-## 作用
+## 🏗️ 技术架构
 
-- **批量检测 API Key**：输入多个 Key，支持自动去重、有效性验证和分类（有效、低额、零额、限流、无效、重复）。
-- **余额查询**：对于支持的提供商，显示可用余额，并可查看总额/已用详情（例如 OpenRouter）。
-- **模型列表获取**：从提供商 API 获取可用模型列表，支持选择并复制。
-- **代理请求**：通过 Cloudflare 代理，避免浏览器 CORS 限制，支持自定义 Base URL。
+### 前端技术栈
+- **Vue 3** - 采用 Composition API 的现代前端框架
+- **Pinia** - 轻量级状态管理库
+- **Vite** - 快速的构建工具和开发服务器
+- **CSS3** - The Anthropic Aesthetic 设计系统，温暖人文的视觉风格
+- **vue-virtual-scroller** - 高性能虚拟滚动，支持大批量数据展示
 
-## 特点
+### 后端技术栈
+- **Cloudflare Workers** - 无服务器边缘计算平台
+- **Durable Objects** - 用于区域代理和状态管理，由主 Worker 协调
+- **WebSocket** - 实时双向数据流传输，替代传统 SSE
+- **现代 JavaScript** - 采用 ES6+ 语法和异步编程
 
-- **多提供商支持**：内置 OpenAI、Anthropic、Google Gemini、X AI、OpenRouter、Groq、GitHub Models、SiliconFlow、DeepSeek、Moonshot、Aliyun、Zhipu 等 12 个提供商。
-- **并发优化**：支持自定义并发数（默认 5），加速批量检测。
-- **美观 UI**：响应式设计、可搜索下拉选择、折叠配置面板、Toast 通知。
-- **扩展性**：配置驱动架构，轻松添加新提供商。
-- **单文件部署**：整个应用封装在 `worker.js` 中，一键部署到 Cloudflare Workers。
-- **安全**：所有请求通过 Worker 代理，不泄露 Key 到客户端。
-- **免费**：基于 Cloudflare 免费计划运行。
-- **兼容性**：兼容 OpenAI 格式的其他 LLM 提供商，手动修改 OpenAI Base URL 即可快速测试。
+## 🚀 快速开始
 
-## 部署方法
+### 环境要求
+- Node.js 18.0 或更高版本
+- npm 或 yarn 包管理器
+- Cloudflare 账户（用于部署）
 
-1. **创建 Cloudflare Worker**：
-   - 登录 [Cloudflare Dashboard](https://dash.cloudflare.com/)。
-   - 转到 "Workers" 部分，点击 "Create a Worker"。
+### 安装步骤
 
-2. **复制代码**：
-   - 将 `worker.js` 代码粘贴到 Worker 编辑器中。
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/your-username/llm-api-key-checker.git
+   cd llm-api-key-checker
+   ```
 
-3. **保存并部署**：
-   - 点击 "Save and Deploy"。
+2. **安装依赖**
+   ```bash
+   npm install
+   ```
 
-4. **访问工具**：
-   - 使用分配的 Worker URL（如 `https://your-worker.your-username.workers.dev`）在浏览器打开。
-   - 建议绑定自定义域名。
+3. **配置环境**
+   
+   复制并编辑配置文件：
+   ```bash
+   cp wrangler.toml.example wrangler.toml
+   ```
+   
+   在 `wrangler.toml` 中配置以下变量：
+   ```toml
+   [vars]
+   ALLOWED_ORIGINS = "[\"https://your-domain.com\"]"
+   ENABLE_UA_RANDOMIZATION = "true"
+   ENABLE_ACCEPT_LANGUAGE_RANDOMIZATION = "true"
+   ```
 
-## 使用方法
+4. **开发环境运行**
+   ```bash
+   npm run dev
+   ```
 
-1. **选择 API 提供商**：
-   - 使用下拉菜单选择提供商。
+5. **构建项目**
+   ```bash
+   npm run build
+   ```
 
-2. **配置 Base URL 和测试模型**：
-   - 修改 Base URL（默认提供官方或 api-proxy.me 公共代理地址。**强烈建议自己搭建代理服务**）。
-   - 输入或从"获取"按钮选择测试模型。
+6. **部署到 Cloudflare Workers**
+   ```bash
+   npm run deploy
+   ```
 
-3. **输入 API Keys**：
-   - 在文本框输入多个 Key（逗号、分号或换行分隔）。
-   - 支持拖拽 .txt 文件或通过"导入文件"按钮上传。
+## 📖 使用指南
 
-4. **高级配置**（可选）：
-   - 点击"⚙️ 高级配置"展开，设置最低余额阈值和并发数。
+### 基本使用
 
-5. **开始检测**：
-   - 点击"开始检测KEY"，查看进度条。
-   - 结果显示在右侧 Tab 中，支持搜索、排序和复制。
+1. **选择服务商** - 从下拉菜单中选择要检测的 LLM 提供商
+2. **配置 API** - 输入对应的 Base URL 和选择模型
+3. **输入密钥** - 在文本框中输入要检测的 API 密钥（支持批量输入）
+4. **开始检测** - 点击"开始检测"按钮启动验证流程
+5. **查看结果** - 实时查看检测结果和详细信息
 
-6. **获取模型**：
-   - 配置区点击"获取"从第一个 Key 获取模型列表。
-   - 结果区有效 Key 旁点击 🎛 查看该 Key 可用模型。
+### 任务控制
 
-## 如何添加更多 API 提供商
+- **开始检测**：启动新的检测任务。
+- **暂停检测**：暂停当前正在进行的检测，任务状态会保留。
+- **继续检测**：从暂停处恢复检测任务。
+- **停止检测**：终止当前检测任务，并清空所有进度和结果。
 
-项目采用配置驱动设计 foss, 便于扩展。新提供商只需 3 步添加，无需修改 UI 代码。
+### 支持的服务商
 
-### 步骤
-1. **在 PROVIDERS 对象添加条目**（在 <script> 标签的开始位置）：
-   - 格式：
-     ```javascript
-     newprovider: {
-       label: 'New Provider',  // 显示名称
-       icon: '🚀',             // Emoji 图标
-       hasBalance: true/false, // 是否支持余额查询
-       defaultBase: 'https://api.newprovider.com/v1', // 默认 Base URL
-       defaultModel: 'default-model',                 // 默认测试模型
-       checkFunction: 'checkNewProviderToken',         // 检测函数名
-       fetchModels: 'fetchNewProviderModels'           // 模型获取函数名
-     }
-     ```
-   - 添加后，下拉菜单会自动显示新提供商。
+| 服务商 | 状态 | 余额查询 | 模型列表 |
+|--------|------|----------|----------|
+| OpenAI | ✅ | 🙅‍♂️ | ✅ |
+| Anthropic Claude | ✅ | 🙅‍♂️ | ✅ |
+| Google Gemini | ✅ | 🙅‍♂️ | ✅ |
+| DeepSeek | ✅ | ✅ | ✅ |
+| Moonshot | ✅ | ✅ | ✅ |
+| 通义千问 | ✅ | 🙅‍♂️ | ✅ |
+| 智谱 AI | ✅ | 🙅‍♂️ | ✅ |
+| Groq | ✅ | 🙅‍♂️ | ✅ |
+| NewApi | ✅ | ✅ | ✅ |
 
-2. **实现检测函数**（在 KEY 检测函数区域添加）：
-   - 格式：
-     ```javascript
-     async function checkNewProviderToken(token) {
-       try {
-         const baseUrl = document.getElementById(`${currentProvider}__base`).value.trim() || PROVIDERS.newprovider.defaultBase;
-         const model = document.getElementById(`${currentProvider}__model`).value.trim() || PROVIDERS.newprovider.defaultModel;
-         // API 调用逻辑
-         const response = await proxiedFetch(/* URL */, { /* options */ });
-         if (!response.ok) {
-           const { message, rawError } = await handleApiError(response);
-           return { token, isValid: false, message, rawError, error: true };
-         }
-         // 如有余额
-         const data = await response.json();
-         const balance = /* parse balance */;
-         return { token, isValid: true, balance };
-       } catch (error) {
-         return { token, isValid: false, message: "网络错误", rawError: error.message, error: true };
-       }
-     }
-     ```
-   - 暴露全局：`window.checkNewProviderToken = checkNewProviderToken;`
+### 密钥输入格式
 
-3. **实现模型获取函数**（在通用模型获取函数区域添加）：
-   - 格式：
-     ```javascript
-     async function fetchNewProviderModels(token, baseUrl) {
-       try {
-         const apiUrl = (baseUrl || PROVIDERS.newprovider.defaultBase).replace(/\/+$/, '') + '/models';
-         const response = await proxiedFetch(apiUrl, {
-           method: 'GET',
-           headers: { /* headers */ }
-         });
-         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-         const data = await response.json();
-         return data.data?.map(m => m.id) || [];
-       } catch (error) {
-         throw error;
-       }
-     }
-     ```
-   - 暴露全局：`window.fetchNewProviderModels = fetchNewProviderModels;`
+支持多种输入格式：
+```
+sk-1234567890abcdef
+sk-1234567890abcdef, sk-abcdef1234567890
+sk-1234567890abcdef;sk-abcdef1234567890
+```
 
-### 示例
-假设添加一个名为 "NewAI" 的提供商：
-- 在 PROVIDERS 添加对象。
-- 实现 `checkNewAIToken` 和 `fetchNewAIModels` 函数。
-- 保存并重新部署 Worker，新提供商即可使用。
+### 结果分类
 
-更多详情见源代码注释。
+- **有效** - 密钥有效且余额充足
+- **低额** - 密钥有效但余额低于设定阈值
+- **零额** - 密钥有效但余额为零
+- **无额** - 密钥有效但配额已用完
+- **限流** - 密钥有效但当前受到频率限制
+- **无效** - 密钥无效或已过期
+- **重复** - 输入列表中的重复密钥
 
-## 特别鸣谢
+## ⚙️ 配置说明
 
-[LLM API 代理](https://api-proxy.me)
+### 高级设置
 
-[hzruo/keycheck](https://github.com/hzruo/keycheck)
+- **最低余额阈值** - 设置低额密钥的判断标准
+- **并发请求数** - 控制后端同时进行的请求数量（1-20）
+- **检测区域** - 选择不同地区的服务器节点
 
-## 许可
+### 安全特性
 
-MIT License. 自由使用和修改。
+- **CORS 保护** - 严格的跨域访问控制
+- **URL 验证** - 防止 SSRF 攻击
+- **UA 随机化** - 随机 User-Agent 避免检测
+- **请求频率控制** - 内置限流机制
+
+## 📁 项目结构
+
+```
+llm-api-key-checker/
+├── src/                          # Cloudflare Workers 后端
+│   ├── index.js                  # 主入口文件，路由处理
+│   ├── checkers.js               # 密钥验证核心逻辑
+│   ├── websocket_handler.js      # WebSocket 会话及任务管理
+│   ├── model_fetchers.js         # 模型列表获取
+│   └── utils/
+│       ├── fetcher.js            # HTTP 请求工具
+│       ├── security.js           # 安全验证
+│       ├── userAgent.js          # UA 随机化
+│       └── cors.js               # CORS 处理
+├── frontend/
+│   ├── src/
+│   │   ├── main.js               # 应用入口
+│   │   ├── App.vue               # 根组件
+│   │   ├── api.js                # API 调用封装
+│   │   ├── assets/
+│   │   │   └── main.css          # 全局样式
+│   │   ├── stores/
+│   │   │   ├── config.js         # 配置状态
+│   │   │   ├── results.js        # 结果状态
+│   │   │   ├── checker.js        # 检测状态
+│   │   │   └── ui.js             # UI 状态
+│   │   └── components/
+│   │       ├── modals/
+│   │       └── ...               # 其他组件
+│   ├── dist/
+│   └── package.json              # 前端依赖
+├── wrangler.toml                 # Cloudflare 配置
+└── package.json                  # 项目依赖
+```
+
+## 🔧 开发指南
+
+### 本地开发
+
+1. **启动前端开发服务器**
+   ```bash
+   npm run dev
+   ```
+
+2. **启动后端模拟**
+   ```bash
+   npx wrangler dev
+   ```
+
+### 添加新的服务商
+
+1. 在 `src/checkers.js` 中添加新的检查器策略
+2. 在 `src/model_fetchers.js` 中添加模型获取逻辑
+3. 在 `config/providers.json` 中更新服务商配置
+
+### 自定义样式
+
+- 修改 `frontend/src/assets/main.css` 中的 CSS 变量
+- 所有样式都使用 CSS 自定义属性，便于主题定制
+
+## 🤝 贡献指南
+
+我们欢迎任何形式的贡献！
+
+1. **Fork** 本项目
+2. **创建** 特性分支 (`git checkout -b feature/AmazingFeature`)
+3. **提交** 更改 (`git commit -m 'feat: Add some AmazingFeature'`)
+4. **推送** 分支 (`git push origin feature/AmazingFeature`)
+5. **创建** Pull Request
+
+### 开发规范
+
+- 代码已进行全面注释和格式化，请保持一致
+- 提交信息使用 [Conventional Commits](https://www.conventionalcommits.org/) 格式
+- 确保所有测试通过后再提交 PR
+
+## 📝 更新日志
+
+### v2.0.0
+- 全新 Vue 3 + Composition API 架构
+- 将核心检测逻辑从 SSE 迁移至 WebSocket，实现后端集中任务管理
+- 支持区域代理
+- 全新的响应式 UI 设计
+- 支持更多 LLM 提供商
+- 新增暂停、继续、停止检测任务的功能
+- 优化模型获取逻辑，支持遍历多个 Key 尝试获取
+- 完善的移动端适配
+
+### v1.0.0
+- 初始版本发布
+- 基础密钥检测功能
+- 支持 OpenAI 和 Anthropic
+
+## 🛡️ 安全说明
+
+- 本工具仅用于验证自己拥有的 API 密钥
+- 请勿用于非法用途或未经授权的密钥检测
+- 所有检测数据仅在当地处理，不会上传到第三方服务器
+- 建议在本地环境中使用，避免在公共场所使用
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 🙏 致谢
+
+- [Vue.js](https://vuejs.org/) - 渐进式 JavaScript 框架
+- [Cloudflare Workers](https://workers.cloudflare.com/) - 无服务器边缘计算平台
+- [Pinia](https://pinia.vuejs.org/) - Vue.js 状态管理库
+- [Vite](https://vitejs.dev/) - 下一代前端构建工具
+
+## 📞 联系我们
+
+- 🐛 **问题反馈**: [GitHub Issues](https://github.com/ssfun/llm-api-key-checker/issues)
+- 💬 **功能建议**: [GitHub Discussions](https://github.com/ssfun/llm-api-key-checker/discussions)
 
 ---
 
-Powered by Cloudflare Workers. Made with ❤️ by @[sfun](https://github.com/ssfun)
+⭐ 如果这个项目对您有帮助，请考虑给我们一个 Star！
